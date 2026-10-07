@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://cfa1ets0cn2xr"]
+
+[ext_resource type="Script" uid="uid://bfa1egd0sc2wr" path="res://core/fade.gd" id="1_fade"]
+
+[sub_resource type="SystemFont" id="SystemFont_card"]
+font_names = PackedStringArray("Courier New", "Courier", "Liberation Mono", "DejaVu Sans Mono", "monospace")
+antialiasing = 0
+subpixel_positioning = 0
+
+[sub_resource type="FontVariation" id="FontVariation_card"]
+base_font = SubResource("SystemFont_card")
+spacing_glyph = 1
+
+[sub_resource type="Theme" id="Theme_card"]
+default_font = SubResource("FontVariation_card")
+default_font_size = 32
+Label/colors/font_color = Color(0.92, 0.92, 0.9, 1)
+Label/colors/font_outline_color = Color(0, 0, 0, 0)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0)
+Label/constants/outline_size = 0
+Label/constants/shadow_offset_x = 0
+Label/constants/shadow_offset_y = 0
+Label/font_sizes/font_size = 32
+Label/fonts/font = SubResource("FontVariation_card")
+
+[node name="Fade" type="CanvasLayer" unique_id=1472735507]
+process_mode = 3
+layer = 100
+script = ExtResource("1_fade")
+
+[node name="BlackRect" type="ColorRect" parent="." unique_id=1455524283]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="CardLabel" type="Label" parent="." unique_id=1566222375]
+visible = false
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -80.5
+offset_top = -18.5
+offset_right = 80.5
+offset_bottom = 18.5
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_card")
+theme_override_colors/font_color = Color(0.92, 0.92, 0.9, 1)
+horizontal_alignment = 1
+vertical_alignment = 1

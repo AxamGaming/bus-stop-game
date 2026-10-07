@@ -3,7 +3,7 @@ extends Node
 # The single state machine. Everything that ends a night goes through trigger_ending(),
 # which is what makes fairness rule 9 ("no ending loops forever") enforceable in one place.
 
-enum State { MENU, NIGHT, ENDING }
+enum State { MENU, TRANSITION, NIGHT, ENDING }
 
 signal night_started(index: int)
 signal ending_triggered(id: StringName, variant: StringName)

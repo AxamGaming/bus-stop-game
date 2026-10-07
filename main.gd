@@ -32,18 +32,13 @@ func _ready() -> void:
 	if sign_line:
 		sign_line.warned.connect(_on_sign_warned)
 
-	# Build Night 1 inline.
-	var n := NightDef.new()
-	n.index = 1
-	n.real_seconds = bus_arrives_at
-	n.post_arrival_seconds = post_arrival_seconds
-	n.figure_cap_index = 1
-	n.gaze_lethal = false
-	n.sign_lethal = false
-	n.breach_enabled = false
-	n.beats = _build_night_1_beats()
-
-	run_night(n)
+	# The game opens on the black rectangle that fade.tscn starts with.
+	# show_card fades "Night 1" in, holds, then fades text + black out together
+	# and reveals the world. run_night() must be called before show_card so the
+	# night is already ticking when the black fades out -- otherwise the clock
+	# would start after the card and the beat sheet would be out of sync.
+	run_night(_build_night(1))
+	await Fade.show_card("Night 1", 2.0, 0.5, 0.8)
 
 # ---- night lifecycle ----
 
@@ -105,10 +100,21 @@ func _on_arrived() -> void:
 func _window_closed(def: NightDef) -> void:
 	match def.index:
 		1, 2:
-			print("[main] Night %d clean. In the full build: fade to Night %d." % [def.index, def.index + 1])
-			# Real version, once you have a fade + card system:
-			#   await _fade_and_card("Night %d" % (def.index + 1))
-			#   run_night(build_night(def.index + 1))
+			# Night transition. Sequence:
+			#   1. fade to black (0.8 s) -- caller-driven, not inside show_card
+			#   2. text fades in over 0.5 s
+			#   3. mid_action fires: run_night() sets up the next night behind
+			#      the black. Figure resets (invisible), clock resets to 11:3x,
+			#      lamp resets to 1.0, director re-queues the new beats.
+			#   4. hold 2 s with the card visible
+			#   5. text + black fade out together over 0.8 s
+			#      -- the world that gets revealed is the NEW night, not the old
+			#         night's end state
+			Game.state = Game.State.TRANSITION
+			await Fade.fade_out(0.8)
+			var next_idx := def.index + 1
+			await Fade.show_card("Night %d" % next_idx, 2.0, 0.5, 0.8,
+				func() -> void: run_night(_build_night(next_idx)))
 		3:
 			Game.trigger_ending(&"still_waiting")
 		_:
@@ -118,12 +124,62 @@ func _on_ending(id: StringName, variant: StringName) -> void:
 	director.stop()
 	AudioHub.restore_weather(1.0)
 	print("[main] ENDING: ", id, "  variant: ", variant)
+
+	# Terminal endings: the run is over. Do NOT restart the night.
+	#   still_waiting  -- fairness rule 9. The next bus is at 11:47 PM.
+	#   right_bus      -- the final bus. Credits / ending card flow goes here
+	#                     (see GDD 10 "Ending 5"; not wired in A1).
+	if id == &"still_waiting":
+		print("[main] terminal ending -- run over")
+		return
 	if id == &"right_bus":
 		print("[main] -> credits")
 		return
+
+	# Non-terminal ending: let the beat land for 2 s, fade out, restart the SAME
+	# night (fairness rule 5, < 5 s), fade back in.
 	await get_tree().create_timer(2.0, false).timeout
-	# Every other ending restarts the SAME night (fairness rule 5, < 5 s).
+	Game.state = Game.State.TRANSITION
+	await Fade.fade_out(0.8)
 	run_night(_night)
+	await Fade.fade_in(0.8)
+
+# ---- night construction ----
+
+# Per-night flags from data/night_def.gd (GDD 18). The debug-scaled timings
+# (bus_arrives_at / post_arrival_seconds, exported on the Main node for fast
+# testing) are reused for all three nights; swap them for the GDD values
+# (300/380/405 s, 30/45/60 s) when the .tres files are authored and the debug
+# kit is no longer needed. Beats: Night 1's sheet is reused for Nights 2 and 3
+# as a placeholder until their authored beats exist -- the Director still has
+# something to schedule, and the per-night *stakes* (cap index, lethal gates)
+# are correct, which is what actually makes later nights worse.
+func _build_night(idx: int) -> NightDef:
+	var n := NightDef.new()
+	n.index = idx
+	n.real_seconds = bus_arrives_at
+	n.post_arrival_seconds = post_arrival_seconds
+	n.breach_enabled = false
+	match idx:
+		1:
+			n.figure_cap_index = 1
+			n.gaze_lethal = false
+			n.sign_lethal = false
+		2:
+			n.figure_cap_index = 2
+			n.gaze_lethal = false
+			n.sign_lethal = true
+		3:
+			n.figure_cap_index = 3
+			n.gaze_lethal = true
+			n.sign_lethal = true
+		_:
+			push_error("[main] no NightDef for index %d" % idx)
+			n.figure_cap_index = 1
+			n.gaze_lethal = false
+			n.sign_lethal = false
+	n.beats = _build_night_1_beats()
+	return n
 
 # ---- beat sheet construction ----
 

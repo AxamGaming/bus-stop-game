@@ -51,7 +51,7 @@ player = NodePath("Player")
 interaction = NodePath("Player/PlayerInteraction")
 sign_line = NodePath("BusStop/SignLine")
 figure_appears_at = 10.0
-bus_arrives_at = 60.0
+bus_arrives_at = 30.0
 post_arrival_seconds = 10.0
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=979499606]

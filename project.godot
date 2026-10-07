@@ -27,6 +27,7 @@ Game="*res://core/game.gd"
 Save="*res://core/save.gd"
 Settings="*res://core/settings.gd"
 AudioHub="*res://core/audio_hub.gd"
+Fade="*res://core/fade.tscn"
 
 [display]
 
