@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://dglbtl1irglyi"]
+
+[ext_resource type="Script" uid="uid://b1opm2nalmtc7" path="res://events/s2_numberless_bus.gd" id="1_s2"]
+[ext_resource type="Script" uid="uid://du7sqr34s21wf" path="res://player/interactable.gd" id="2_inter"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_door"]
+size = Vector3(1, 1.8, 0.5)
+
+[node name="S2NumberlessBus" type="Node3D" unique_id=64839688]
+script = ExtResource("1_s2")
+event_id = &"s2_numberless_bus"
+
+[node name="Door" type="StaticBody3D" parent="." unique_id=515835404]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.95, -4.75)
+script = ExtResource("2_inter")
+prompt = "Board"
+hold_seconds = 1.0
+max_reach = 2.0
+enabled = false
+shape_size = Vector3(1, 1.8, 0.5)
+
+[node name="Collision" type="CollisionShape3D" parent="Door" unique_id=273384379]
+shape = SubResource("BoxShape3D_door")

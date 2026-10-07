@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bq0rpgb8ek0tk"]
+
+[ext_resource type="Script" path="res://events/s1_passing_bus.gd" id="1_s1"]
+
+[node name="S1PassingBus" type="Node3D"]
+script = ExtResource("1_s1")
+event_id = &"s1_passing_bus"

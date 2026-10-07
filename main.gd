@@ -1,10 +1,6 @@
 extends Node3D
 # main.gd -- attach to the Main node.
 # Night 1 spine: gaze loop, beats via the Director, clean night end, restart on fail.
-#
-# The night's beats are built inline here so no .tres is needed yet. When you add
-# Night 2 and Night 3, move each night's NightDef to its own .tres and put them in
-# an Array[NightDef] export; run_night() then takes the array index.
 
 @export var director: Director
 @export var figure: FogFigure
@@ -15,8 +11,10 @@ extends Node3D
 @export var player: Node3D
 @export var interaction: PlayerInteraction
 @export var sign_line: Area3D
+@export var bus: Node3D
+@export var player_spawn: Node3D
 
-# Beat sheet timings (GDD 11). Real values; use the debug kit for fast tests.
+# Beat sheet timings. Real values; use the debug kit for fast tests.
 @export var figure_appears_at := 40.0     # 0:40 -- figure appears
 @export var stare_lesson_at := 150.0      # 2:30 -- stare lesson beat
 @export var bus_arrives_at := 300.0       # 5:00 -- the bus arrives
@@ -24,6 +22,7 @@ extends Node3D
 
 var _night: NightDef
 var _ctx: EventContext
+var _run_id := 0
 
 func _ready() -> void:
 	Game.ending_triggered.connect(_on_ending)
@@ -32,19 +31,20 @@ func _ready() -> void:
 	if sign_line:
 		sign_line.warned.connect(_on_sign_warned)
 
-	# The game opens on the black rectangle that fade.tscn starts with.
-	# show_card fades "Night 1" in, holds, then fades text + black out together
-	# and reveals the world. run_night() must be called before show_card so the
-	# night is already ticking when the black fades out -- otherwise the clock
-	# would start after the card and the beat sheet would be out of sync.
 	run_night(_build_night(1))
 	await Fade.show_card("Night 1", 2.0, 0.5, 0.8)
 
 # ---- night lifecycle ----
 
 func run_night(def: NightDef) -> void:
+	_run_id += 1
 	_night = def
 	Game.begin_night(def.index)
+
+	# Reset player to the shelter so a night restart does not leave them
+	# standing past the sign line (which would fire the sign ending again
+	# on the very first frame of the new night).
+	_reset_player_position()
 
 	if figure:
 		figure.configure(def.figure_cap_index, def.breach_enabled)
@@ -56,15 +56,8 @@ func run_night(def: NightDef) -> void:
 	if sign_line:
 		sign_line.configure(def.sign_lethal)
 
-	# A3: tell every world object with per-night appearance which night it
-	# is. This runs AFTER the gameplay systems are configured and BEFORE
-	# the clock starts -- the night's initial state (poster text, timetable
-	# text, etc.) is correct before the first tick. The swap happens behind
-	# the fade's black rectangle (the caller fades to black before calling
-	# run_night), so the player never sees the text change.
 	_apply_night_content(def.index)
 
-	# Build the event context fresh each night so nothing leaks across restarts.
 	_ctx = EventContext.new()
 	_ctx.lamp = lamp
 	_ctx.player = player
@@ -77,6 +70,18 @@ func run_night(def: NightDef) -> void:
 	director.start_night(def, _ctx)
 
 	print("[main] Night %d started. Bus arrives at %.0fs." % [def.index, def.real_seconds])
+	
+func _reset_player_position() -> void:
+	if player == null:
+		return
+	var spawn := player_spawn
+	if spawn == null:
+		spawn = get_tree().get_first_node_in_group("bus_stop_centre") as Node3D
+	if spawn == null:
+		return
+	(player as Node3D).global_position = spawn.global_position + Vector3(0, 0.1, 0)
+	if player.has_method("stop_motion"):
+		player.stop_motion()      # only if player.gd has this; optional
 
 # ---- signal handlers ----
 
@@ -99,25 +104,44 @@ func _on_sign_warned() -> void:
 	print("[main] sign warning")
 
 func _on_arrived() -> void:
+	var my_id := _run_id
+
+	await get_tree().create_timer(0.1, false).timeout
+	if my_id != _run_id:
+		return
 	director.stop()
-	print("[main] bus passes the stop -- decision window open for %.0fs" % _night.post_arrival_seconds)
-	await get_tree().create_timer(_night.post_arrival_seconds, false).timeout
+	print("[main] bus arrival signal -- waiting for bus event to finish")
+
+	# Wait ONLY for the bus event for this night, not for any event still
+	# lingering (e.g. a stranger that hasn't departed yet). On Night 1 the
+	# bus is s1_passing_bus, on Night 2 it's s2_numberless_bus, on Night 3
+	# it's s3_real_bus.
+	var bus_event_id: StringName = &""
+	match _night.index:
+		1: bus_event_id = &"s1_passing_bus"
+		2: bus_event_id = &"s2_numberless_bus"
+		3: bus_event_id = &"s3_real_bus"
+
+	while director.is_busy(bus_event_id):
+		await get_tree().create_timer(0.5, false).timeout
+		if my_id != _run_id:
+			return
+	print("[main] bus event done")
+
+	# Only Night 1 runs a post-arrival window from main. Nights 2 and 3 own
+	# their decision windows inside the bus event.
+	if _night.index != 2 and _night.index != 3:
+		print("[main] decision window open for %.0fs" % _night.post_arrival_seconds)
+		await get_tree().create_timer(_night.post_arrival_seconds, false).timeout
+		if my_id != _run_id:
+			return
+
 	if Game.state == Game.State.NIGHT:
 		_window_closed(_night)
 
 func _window_closed(def: NightDef) -> void:
 	match def.index:
 		1, 2:
-			# Night transition. Sequence:
-			#   1. fade to black (0.8 s) -- caller-driven, not inside show_card
-			#   2. text fades in over 0.5 s
-			#   3. mid_action fires: run_night() sets up the next night behind
-			#      the black. Figure resets (invisible), clock resets to 11:3x,
-			#      lamp resets to 1.0, director re-queues the new beats.
-			#   4. hold 2 s with the card visible
-			#   5. text + black fade out together over 0.8 s
-			#      -- the world that gets revealed is the NEW night, not the old
-			#         night's end state
 			Game.state = Game.State.TRANSITION
 			await Fade.fade_out(0.8)
 			var next_idx := def.index + 1
@@ -129,14 +153,11 @@ func _window_closed(def: NightDef) -> void:
 			push_error("No NightDef with index %d" % def.index)
 
 func _on_ending(id: StringName, variant: StringName) -> void:
+	var my_id := _run_id
 	director.stop()
 	AudioHub.restore_weather(1.0)
 	print("[main] ENDING: ", id, "  variant: ", variant)
 
-	# Terminal endings: the run is over. Do NOT restart the night.
-	#   still_waiting  -- fairness rule 9. The next bus is at 11:47 PM.
-	#   right_bus      -- the final bus. Credits / ending card flow goes here
-	#                     (see GDD 10 "Ending 5"; not wired in A1).
 	if id == &"still_waiting":
 		print("[main] terminal ending -- run over")
 		return
@@ -144,24 +165,18 @@ func _on_ending(id: StringName, variant: StringName) -> void:
 		print("[main] -> credits")
 		return
 
-	# Non-terminal ending: let the beat land for 2 s, fade out, restart the SAME
-	# night (fairness rule 5, < 5 s), fade back in.
 	await get_tree().create_timer(2.0, false).timeout
+	if my_id != _run_id:
+		return
 	Game.state = Game.State.TRANSITION
 	await Fade.fade_out(0.8)
+	if my_id != _run_id:
+		return
 	run_night(_night)
 	await Fade.fade_in(0.8)
-
+	
 # ---- night construction ----
 
-# Per-night flags from data/night_def.gd (GDD 18). The debug-scaled timings
-# (bus_arrives_at / post_arrival_seconds, exported on the Main node for fast
-# testing) are reused for all three nights; swap them for the GDD values
-# (300/380/405 s, 30/45/60 s) when the .tres files are authored and the debug
-# kit is no longer needed. Beats: Night 1's sheet is reused for Nights 2 and 3
-# as a placeholder until their authored beats exist -- the Director still has
-# something to schedule, and the per-night *stakes* (cap index, lethal gates)
-# are correct, which is what actually makes later nights worse.
 func _build_night(idx: int) -> NightDef:
 	var n := NightDef.new()
 	n.index = idx
@@ -194,20 +209,6 @@ func _build_night(idx: int) -> NightDef:
 
 # ---- A3: per-night content ----
 
-# Tell every world object with per-night appearance which night it is. Each
-# object implements set_night(idx) -- synchronous, idempotent, no Game refs.
-# We use get_node_or_null() + has_method() (duck typing) so main.gd compiles
-# and runs even before every object exists. Add a new object's set_night call
-# the moment the object exists -- nothing breaks in between.
-#
-# Why explicit wiring instead of call_group("night_content", ...):
-#   - call_group has a documented failure mode (Godot #43362): mutating the
-#     tree/group during the call can skip nodes. set_night itself doesn't
-#     mutate the tree, but a future set_night that spawns/hides children
-#     would hit this.
-#   - Explicit wiring gives ordering control and one file to read.
-#   - The list is small (poster, timetable, eventually bus + stranger). A
-#     group broadcast saves nothing at this scale.
 func _apply_night_content(idx: int) -> void:
 	var poster := get_node_or_null("BusStop/PosterBody")
 	if poster != null and poster.has_method("set_night"):
@@ -217,70 +218,69 @@ func _apply_night_content(idx: int) -> void:
 	if timetable != null and timetable.has_method("set_night"):
 		timetable.set_night(idx)
 
-	# Uncomment when these objects exist (B6 bus rig, B4 stranger):
-	# var bus := get_node_or_null("Bus")
-	# if bus != null and bus.has_method("set_night"):
-	#         bus.set_night(idx)
-	# var stranger := get_node_or_null("BenchStranger")
-	# if stranger != null and stranger.has_method("set_night"):
-	#         stranger.set_night(idx)
+	if bus != null and bus.has_method("set_night"):
+		bus.set_night(idx)
+	if bus != null and bus.has_method("reset"):
+		bus.reset()
 
 # ---- beat sheet construction ----
 
 func _build_night_1_beats() -> Array[BeatDef]:
+	var t := bus_arrives_at / 300.0
 	var out: Array[BeatDef] = []
-
-	# 0:40 -- figure appears (structural, intensity 2)
-	out.append(_authored(figure_appears_at, 2,
+	out.append(_authored(t * 40.0, 2,
 		_load_event("res://events/beat_figure_appear.tscn",
 			&"beat_figure_appear", 2, 1, 3)))
-
-	# 1:30 -- distant engine, no bus
-	out.append(_authored(90.0, 1,
+	out.append(_authored(t * 90.0, 1,
 		_load_event("res://events/e02_distant_engine.tscn",
 			&"e02_distant_engine", 1, 1, 3)))
-
-	# 2:30 -- stare lesson (a flicker for now; a dedicated event comes later)
-	out.append(_authored(stare_lesson_at, 2,
+	out.append(_authored(t * 150.0, 2,
 		_load_event("res://events/e01_lamp_flicker.tscn",
 			&"e01_lamp_flicker", 2, 1, 3)))
-
-	# 4:00 -- second engine approach before the bus arrives
-	out.append(_authored(240.0, 1,
+	out.append(_authored(t * 240.0, 1,
 		_load_event("res://events/e02_distant_engine.tscn",
 			&"e02_distant_engine", 1, 1, 3)))
-
+	out.append(_punctual(bus_arrives_at, 2,
+		_load_event("res://events/s1_passing_bus.tscn",
+			&"s1_passing_bus", 2, 1, 1)))
 	return out
 
 func _build_night_2_beats() -> Array[BeatDef]:
-	# Placeholder. Real Night 2 beats come with the bus rig (B6) and the
-	# stranger (B4). For now: same shape as Night 1, but the stare-lesson
-	# flicker is moved to 3:00 so you can tell the nights apart in the log
-	# and confirm the per-night beat routing actually works.
+	var t := bus_arrives_at / 380.0
 	var out: Array[BeatDef] = []
-	out.append(_authored(figure_appears_at, 2,
+	out.append(_authored(t * 40.0, 2,
 		_load_event("res://events/beat_figure_appear.tscn",
 			&"beat_figure_appear", 2, 1, 3)))
-	out.append(_authored(90.0, 1,
+	out.append(_authored(t * 80.0, 1,
+		_load_event("res://events/e06_bin_radio.tscn",
+			&"e06_bin_radio", 1, 2, 3)))
+	out.append(_authored(t * 90.0, 1,
 		_load_event("res://events/e02_distant_engine.tscn",
 			&"e02_distant_engine", 1, 1, 3)))
-	out.append(_authored(180.0, 2,   # 3:00, not 2:30 -- tells Night 2 from Night 1
-		_load_event("res://events/e01_lamp_flicker.tscn",
-			&"e01_lamp_flicker", 2, 1, 3)))
+	out.append(_authored(t * 180.0, 2,
+		_load_event("res://events/e07_bench_stranger.tscn",
+			&"e07_bench_stranger", 2, 2, 3)))
+	out.append(_punctual(bus_arrives_at, 2,
+		_load_event("res://events/s2_numberless_bus.tscn",
+			&"s2_numberless_bus", 2, 2, 2)))
 	return out
 
 func _build_night_3_beats() -> Array[BeatDef]:
-	# Placeholder. Real Night 3 beats come with the silence beat (S3) and
-	# the real bus (S3). For now: a long quiet night with one early engine
-	# and a late flicker, to feel different from Nights 1 and 2.
+	var t := bus_arrives_at / 405.0
 	var out: Array[BeatDef] = []
-	out.append(_authored(figure_appears_at, 2,
+	out.append(_authored(t * 40.0, 2,
 		_load_event("res://events/beat_figure_appear.tscn",
 			&"beat_figure_appear", 2, 1, 3)))
-	out.append(_authored(60.0, 1,    # 1:00, earlier -- the night is worse
+	out.append(_authored(t * 60.0, 1,
 		_load_event("res://events/e02_distant_engine.tscn",
 			&"e02_distant_engine", 1, 1, 3)))
-	out.append(_authored(210.0, 2,   # 3:30
+	out.append(_authored(t * 80.0, 1,
+		_load_event("res://events/e06_bin_radio.tscn",
+			&"e06_bin_radio", 1, 2, 3)))
+	out.append(_authored(t * 150.0, 2,
+		_load_event("res://events/e07_bench_stranger.tscn",
+			&"e07_bench_stranger", 2, 3, 3)))
+	out.append(_authored(t * 210.0, 2,
 		_load_event("res://events/e01_lamp_flicker.tscn",
 			&"e01_lamp_flicker", 2, 1, 3)))
 	return out
@@ -292,6 +292,17 @@ func _authored(time_sec: float, intensity: int, event: HorrorEvent) -> BeatDef:
 	b.event = event
 	b.max_delay = 40.0
 	b.punctual = false
+	return b
+
+# A punctual beat fires at exactly time_sec with no delay. The `punctual`
+# flag is checked BEFORE max_delay in Director._try_beat, so setting
+# max_delay here would be dead code -- it is left at its Resource default.
+func _punctual(time_sec: float, intensity: int, event: HorrorEvent) -> BeatDef:
+	var b := BeatDef.new()
+	b.time_sec = time_sec
+	b.kind = BeatDef.Kind.AUTHORED
+	b.event = event
+	b.punctual = true
 	return b
 
 func _load_event(path: String, id: StringName, intensity: int, min_n: int, max_n: int) -> HorrorEvent:

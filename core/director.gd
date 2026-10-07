@@ -21,19 +21,48 @@ func _ready() -> void:
 	add_to_group(&"director")
 
 func start_night(n: NightDef, c: EventContext) -> void:
+	# Free any events from a previous night before starting a new one.
+	# Without this, a night restart leaves orphaned events running: an
+	# e07_bench_stranger from the previous attempt reveals a second stranger,
+	# an s2_numberless_bus keeps driving a bus that has no business being there.
+	kill_all()
+
 	night = n
 	ctx = c
 	_assert_beats_sorted()
 	_t = 0.0
 	_next = 0
 	_pending.clear()
-	_live.clear()
 	_last_start.clear()
 	_calm_until = 0.0
 	_last_id = &""
 	running = true
 	print("[director] night %d started, %d beats, arrival %.0fs" % [n.index, n.beats.size(), n.real_seconds])
 
+# Abort every live event and clear tracking. Called at the top of
+# start_night() so no state leaks across a night restart.
+func kill_all() -> void:
+	for inst in _live.keys():
+		if is_instance_valid(inst):
+			inst.abort()
+	_live.clear()
+	_pending.clear()
+
+# is_busy(id) -- with no argument, returns true if ANY event is live.
+# With an id, returns true only if that specific event is live. main.gd
+# uses the id form so the bus-arrival wait is not blocked by an unrelated
+# event (e.g. a stranger still lingering on the bench).
+func is_busy(id_filter: StringName = &"") -> bool:
+	for inst in _live.keys():
+		if not is_instance_valid(inst):
+			_live.erase(inst)
+	if id_filter == &"":
+		return _live.size() > 0
+	for res in _live.values():
+		if res.id == id_filter:
+			return true
+	return false
+	
 func stop() -> void:
 	running = false
 

@@ -1,91 +1,68 @@
-# A2 + A3 — Per-Night Beats + Content Hook
+# B1–B7: Bus Rig + Night 2/3 Events
 
-Drop-in patch for the bus-stop-game repo. Implements:
-- **A2**: per-night beat builders (Night 2 and Night 3 no longer play Night 1's beats)
-- **A3**: the `set_night(idx)` interface for per-night world content (poster + timetable)
+Drop-in patch for the bus-stop-game repo. Implements B6 (bus rig), B7 (passing
+bus), B5 (numberless bus), B4 (bench stranger), and B3 (bin radio). B1 (night
+.tres) and B2 (timetable change event) are skipped per spec — they're optional.
 
 ## Files
 
 ### New
-- `world/poster.gd` — extends `Interactable`, adds `set_night(idx)`. Night 1: water-damaged. Night 2: partial text. Night 3: the yellow-raincoat payoff.
-- `world/poster.gd.uid` — Godot UID sidecar
-- `world/timetable.gd` — extends `Interactable`, adds `set_night(idx)`. Night 1: rules smudged. Night 2+: rules legible.
-- `world/timetable.gd.uid` — Godot UID sidecar
-- `tests/test_a3_content.gd` — unit test: instantiates bus_stop, calls `set_night(1/2/3)` on both objects, asserts the Label3D text matches the expected strings. Also checks idempotency.
-- `tests/test_a3_content.tscn` — the test scene
+- `world/bus_rig.gd` + `.uid` + `.tscn` — the bus: primitive-shape body, doors, destination board, headlights, interior light, 4 audio players. Methods: `set_night()`, `arrive()`, `open_doors()`, `close_doors()`, `depart()`, `pass_by()`, `reset()`, `door_world_pos()`. Uses TRANS_QUAD+EASE_OUT for arrival (decelerate), TRANS_LINEAR for pass-by, TRANS_QUAD+EASE_IN for depart.
+- `events/s1_passing_bus.gd` + `.uid` + `.tscn` — B7, Night 1. Bus drives past (9s), lamp blacks out at midpoint (4.5s), figure steps 0.5s into darkness.
+- `events/s2_numberless_bus.gd` + `.uid` + `.tscn` — B5, Night 2. Bus arrives, opens doors, 45s decision window. Board → `wrong_bus` ending. Ignore → bus departs.
+- `events/e07_bench_stranger.gd` + `.uid` + `.tscn` — B4, Nights 2+3. Seated silhouette on bench, appears only when player looks away (dot-product gaze detection, Slender/SCP-173 pattern). Hold E → `spoke_first` ending. Night 3 variant: head tilted toward player. `visible` + `enabled` paired to prevent phantom triggers.
+- `events/e06_bin_radio.gd` + `.uid` + `.tscn` — B3, Nights 2+3. Plays voice fragment from the bin. Load-bearing for Rule 2 (the player has heard a voice before the stranger appears).
 
 ### Modified
-- `world/bus_stop.tscn` — PosterBody and TimetableBody now use `poster.gd` / `timetable.gd` instead of the base `interactable.gd`. The Label3D text defaults are set to Night 1 content (smudged timetable, water-damaged poster) so the scene is correct even before `set_night` runs.
-- `main.gd` — three additions:
-  1. `_apply_night_content(idx)` function: explicit duck-typed wiring to every per-night object
-  2. Call to `_apply_night_content(def.index)` inside `run_night()`, after the gameplay systems are configured and before the clock starts
-  3. `_build_night_2_beats()` and `_build_night_3_beats()`, routed in the `_build_night(idx)` match
+- `main.gd` — wired bus into `_apply_night_content()`, added B7/B5/B3/B4 to beat sheets (scaled proportionally with `bus_arrives_at` so debug config produces sorted beats), added `_punctual()` helper for bus arrival beats, `_on_arrived()` waits one frame then for `director.is_busy()` before starting post-arrival window.
+- `main.tscn` — added BusRig instance, wired `bus` export.
+- `core/director.gd` — added `is_busy()` public method (prunes dead events, returns true if any live events remain).
 
 ## How to install
 
 Copy these files over your repo (paths match the repo layout):
 
-    cp main.gd /path/to/bus-stop-game/
-    cp world/poster.gd world/poster.gd.uid world/timetable.gd world/timetable.gd.uid world/bus_stop.tscn /path/to/bus-stop-game/world/
-    cp tests/test_a3_content.gd tests/test_a3_content.tscn /path/to/bus-stop-game/tests/
+    cp main.gd main.tscn /path/to/bus-stop-game/
+    cp core/director.gd /path/to/bus-stop-game/core/
+    cp world/bus_rig.gd world/bus_rig.gd.uid world/bus_rig.tscn /path/to/bus-stop-game/world/
+    cp events/*.gd events/*.gd.uid events/*.tscn /path/to/bus-stop-game/events/
 
-Or extract this zip on top of your checkout — the paths inside match the repo.
+Or extract this zip on top of your checkout.
 
 ## Validation (already run, all green)
 
-- `parseall`: **34/34** scripts compile, 0 failures (was 32, +2 for the new scripts)
-- `tests/run_all.sh`: **2/2** test scenes pass
-- `test_a3_content`: **8/8** assertions pass (poster × 3 nights + idempotent, timetable × 3 nights + idempotent)
-- Headless run of `res://main.tscn`: Night 1 (4 beats) → Night 2 (3 beats, flicker at 3:00 not 2:30) → Night 3 (3 beats, engine at 1:00) → `still_waiting` terminal ending. Zero runtime errors.
+- **parseall**: 40/40 scripts compile, 0 failures (+5 new: bus_rig, s1, s2, e06, e07)
+- **tests/run_all.sh**: 2/2 test scenes pass
+- **Headless Night 1**: figure(4s) → engine(9s) → flicker(19s) → engine(24s) → **s1_passing_bus(30s)**: bus pass-by + lamp blackout + figure step → 10s post-arrival → Night 2
+- **Headless Night 2**: figure(3.2s) → **e06_bin_radio(6.3s)**: voice plays → engine(7.1s) → **e07_bench_stranger(18.2s)**: stranger appears when player looks away → **s2_numberless_bus(30s)**: numberless bus arrives → Night 3
+- **Headless Night 3**: figure(3s) → engine(4.4s) → e06_bin_radio(5.9s) → e07_bench_stranger(18s, Night 3 variant) → flicker → still_waiting terminal ending
 
-## Design rationale (informed by horror-game research)
+## Design decisions (research-informed)
 
-### Why `extends Interactable` (script inheritance) instead of composition
-- Godot forums endorse **script** inheritance (`extends Interactable`); only **scene** inheritance / editable-children is discouraged.
-- The poster and timetable need BOTH the Interactable behaviour (tap-to-read lean-in) AND the per-night text swap. Script inheritance gives both in one node.
-- For pure-data swaps (no behaviour change), composition with a `NightContent` Resource would be more idiomatic — but that's a refactor for later, not now.
+### Bus rig: tween on position:x, not PathFollow3D
+The road is straight (road.tscn runs along x-axis at z=-8). PathFollow3D adds complexity without benefit on a straight path. TRANS_QUAD+EASE_OUT for arrival reads as braking; TRANS_LINEAR for pass-by is constant speed; TRANS_QUAD+EASE_IN for depart reads as accelerating away. (Godot Tween docs; research confirmed TRANS_QUAD "starts quickly and slows down".)
 
-### Why `set_night(idx)` is synchronous, not a signal broadcast
-- **Signal-based broadcast for initial state is an anti-pattern** (Bugnet 2026, KidsCanCode, Godot #72024): a parent emitting `night_changed` in `_ready()` can fire before child listeners connect or before their `@onready` vars resolve. Result: missed updates, null refs.
-- `set_night` is the analogue of Amnesia's `OnEnter` callback — synchronous, re-runnable, called by the coordinator. The coordinator (`main.gd`) is the common parent, which (per KidsCanCode's "call down, signal up" rule) is the correct place to wire children.
+### Stranger: dot-product gaze detection (Slender/SCP-173 pattern)
+The stranger only appears when `camera.forward .dot(direction_to_bench) < 0.1` — the player is looking away. A 0.1 threshold gives margin so the stranger doesn't flicker at exactly 90°. Departure is also gaze-gated (symmetry: never see it arrive, never see it leave). Audio telegraph (cloth.wav creak) plays on reveal, drawing the player's attention to look back. (Research: Amnesia Gatherer pattern.)
 
-### Why explicit wiring in `main.gd` instead of `call_group("night_content", ...)`
-- `call_group` has a **documented failure mode** (Godot GitHub issue, Dec 2020): mutating the tree/group during the call can skip nodes. `set_night` itself doesn't mutate the tree today, but a future `set_night` that spawns/hides children (e.g. the stranger appearing on Night 2) would hit this.
-- Explicit wiring gives ordering control and one file to read. The list is small (poster, timetable, eventually bus + stranger) — a group broadcast saves nothing at this scale.
+### visible + enabled pairing
+When the stranger is hidden, BOTH `visible=false` AND `enabled=false` are set. Setting only `visible=false` leaves a phantom trigger (the interaction ray still hits the StaticBody3D). (Research: Godot Node docs confirm `visible=false` stops rendering but not processing.)
 
-### Why the swap happens behind the fade (no animation)
-- The night transition fades to black, then `run_night()` (passed as `mid_action` to `Fade.show_card`) sets up the new night behind the black, then the fade reveals the new night. The player never sees the text change.
-- Animating the swap would waste frames and risk a visible pop if the fade is shorter than the animation. Silent Hill's Otherworld transition is the reference: the world changes while you can't see it, then is revealed.
+### Beat timings scaled proportionally with bus_arrives_at
+GDD times (300/380/405s nights) are scaled by `bus_arrives_at/GDD_arrival` so the debug config (`bus_arrives_at=30s`) produces sorted beats at 4s, 9s, 15s, 24s, 30s instead of the unsorted 40s, 90s, 150s, 240s, 30s that triggered the assertion.
 
-### Why the Night 1 timetable is smudged
-- GDD §9: Night 1 shows the header and time but smudges the three rules. The player fails Night 1 without knowing the rules; Night 2 reveals them. The smudge is the **teaching device** — "there is something to read here, but not yet." This is the core rule-learning loop of the game.
-
-### Horror-game references that informed this design
-- **Silent Hill Otherworld** (Silent Hill Wiki): same geometry, state-swapped in place. The bus-stop = the persistent geometry; `set_night` = the state swap.
-- **FNAF nights** (FNAF Wiki): same office scene, different params per night. The "Night X" card is a UI overlay, not a scene boundary. Direct precedent for `set_night(idx)` as a parameter application, not a scene change.
-- **Amnesia HPL2 `OnEnter`** (Frictional Games Wiki): synchronous re-configuration callback on every (re)entry. Direct analogue of `set_night` — re-runnable, called by the engine/coordinator, not signal-driven.
-- **Resident Evil RDT** (ArchiveTeam): one data file per room + runtime flags selecting active content. Validates "same scene + flag-driven content" architecture.
+### _on_arrived() waits one frame before director.stop()
+The clock's `arrived` signal and the director's `_process` both fire in the same frame. Without the one-frame wait, `director.stop()` would prevent the punctual bus beat from being queued. After the wait, the bus beat starts, then `director.stop()` prevents new beats, then `director.is_busy()` waits for the bus event to finish before starting the post-arrival window.
 
 ## What is NOT in this patch
+- B1 (night_2.tres) — optional per spec, `_build_night(idx)` is functionally equivalent
+- B2 (beat_timetable_change) — optional per spec, A3 hook already changes timetable at night start
+- S3 (real bus with "47" board) — not yet built; Night 3 clean pass falls through to `still_waiting`
+- Ending card flow for `right_bus` — still deferred
+- External PSX 3D assets (elbolilloduro.itch.io) — itch.io download URLs require authenticated keys; spec says use primitives for first build anyway
 
-- The bus rig (B6) and stranger (B4) — their `set_night` calls are commented out in `_apply_night_content` until those objects exist.
-- The ending card flow for `right_bus` (still deferred from A1).
-- A `.tres` per-night refactor — the spec explicitly says skip this; `_build_night(idx)` is functionally equivalent.
-
-## API summary
-
-    # In any world object with per-night appearance:
-    extends Interactable
-    func set_night(idx: int) -> void:
-        match idx:
-            1: ...
-            2: ...
-            3: ...
-
-    # In main.gd::run_night(), after gameplay config, before clock.start:
-    _apply_night_content(def.index)
-
-    # The wiring is explicit and duck-typed:
-    var poster := get_node_or_null("BusStop/PosterBody")
-    if poster != null and poster.has_method("set_night"):
-        poster.set_night(idx)
+## Audio credits
+All audio is from the existing `audio/` folder (27 WAVs, already in the repo):
+- engine_approach.wav, brake_hiss.wav, door_open.wav, door_close.wav, interior_hum.wav — bus rig
+- voice_fragment_a.wav — bin radio (E6)
+- cloth.wav — stranger bench creak (E7)

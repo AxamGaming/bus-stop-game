@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://bc880fld6welk"]
+
+[ext_resource type="Script" path="res://events/e07_bench_stranger.gd" id="1_e7"]
+[ext_resource type="Script" uid="uid://du7sqr34s21wf" path="res://player/interactable.gd" id="2_inter"]
+[ext_resource type="AudioStream" uid="uid://bcpn4fjni3l10" path="res://audio/cloth.wav" id="3_creak"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_stranger"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_stranger"]
+shading_mode = 0
+albedo_color = Color(0.05, 0.05, 0.07, 1)
+
+[node name="E07BenchStranger" type="Node3D"]
+script = ExtResource("1_e7")
+event_id = &"e07_bench_stranger"
+night_3 = false
+
+[node name="Stranger" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.6, 1.05)
+script = ExtResource("2_inter")
+prompt = "Say something…"
+hold_seconds = 1.0
+distinct_style = true
+shape_size = Vector3(0.7, 0.9, 0.7)
+enabled = false
+
+[node name="Mesh" type="MeshInstance3D" parent="Stranger"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+mesh = SubResource("CapsuleMesh_stranger")
+material_override = SubResource("Mat_stranger")
+
+[node name="Creak" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.6, 1.05)
+stream = ExtResource("3_creak")
+unit_size = 4.0
+max_distance = 12.0
+bus = &"SFX"

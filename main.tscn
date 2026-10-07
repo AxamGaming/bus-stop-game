@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://3g1m7187r62s" path="res://main.gd" id="1_dg77c"]
 [ext_resource type="AudioStream" uid="uid://cp2lrx3ktblv7" path="res://audio/lamp_hum.wav" id="5_ycdy4"]
 [ext_resource type="AudioStream" uid="uid://dfyodkt4dm3ws" path="res://audio/heartbeat.wav" id="6_w48qg"]
+[ext_resource type="PackedScene" uid="uid://cbusr1g0r1gp" path="res://world/bus_rig.tscn" id="7_yaehf"]
 [ext_resource type="Script" uid="uid://cebh0lscgea1o" path="res://world/look_at_tracker.gd" id="9_ycdy4"]
 [ext_resource type="Script" uid="uid://dofwbybm8ut3g" path="res://world/gaze_monitor.gd" id="10_w48qg"]
 [ext_resource type="Script" uid="uid://dtk4s03m0w0go" path="res://world/night_clock.gd" id="11_vivmo"]
@@ -39,7 +40,7 @@ billboard_keep_scale = true
 material = SubResource("StandardMaterial3D_3")
 size = Vector2(0.02, 0.55)
 
-[node name="Main" type="Node3D" unique_id=1257233798 node_paths=PackedStringArray("director", "figure", "gaze", "lamp", "clock", "tracker", "player", "interaction", "sign_line")]
+[node name="Main" type="Node3D" unique_id=1257233798 node_paths=PackedStringArray("director", "figure", "gaze", "lamp", "clock", "tracker", "player", "interaction", "sign_line", "bus", "player_spawn")]
 script = ExtResource("1_dg77c")
 director = NodePath("Director")
 figure = NodePath("FogFigure")
@@ -50,6 +51,8 @@ tracker = NodePath("LookAtTracker")
 player = NodePath("Player")
 interaction = NodePath("Player/PlayerInteraction")
 sign_line = NodePath("BusStop/SignLine")
+bus = NodePath("BusRig")
+player_spawn = NodePath("BusStop/BusStopCentre")
 figure_appears_at = 10.0
 bus_arrives_at = 30.0
 post_arrival_seconds = 10.0
@@ -74,6 +77,9 @@ attenuation_model = 3
 unit_size = 30.0
 max_db = 1.0
 panning_strength = 1.5
+
+[node name="BusRig" parent="." unique_id=958642916 instance=ExtResource("7_yaehf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -44.118004, 0, -6)
 
 [node name="FigureStations" parent="." unique_id=1562264150 instance=ExtResource("ext4")]
 
@@ -173,6 +179,7 @@ offset_bottom = -120.0
 grow_horizontal = 1
 
 [editable path="BusStop"]
+[editable path="BusRig"]
 [editable path="FigureStations"]
 [editable path="FogFigure"]
 [editable path="Player"]

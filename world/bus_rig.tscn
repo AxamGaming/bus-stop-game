@@ -1,0 +1,130 @@
+[gd_scene format=3 uid="uid://cbusr1g0r1gp"]
+
+[ext_resource type="Script" uid="uid://cbusr1gr1g0xd" path="res://world/bus_rig.gd" id="1_busrig"]
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.15, 0.17, 0.2, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="Mesh_body"]
+size = Vector3(10, 2.8, 2.5)
+
+[sub_resource type="StandardMaterial3D" id="Mat_windscreen"]
+transparency = 1
+albedo_color = Color(0.05, 0.08, 0.1, 0.4)
+emission_enabled = true
+emission = Color(0.02, 0.04, 0.06, 1)
+emission_energy_multiplier = 0.5
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="Mesh_windscreen"]
+size = Vector2(2.2, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_dest"]
+albedo_color = Color(0.08, 0.08, 0.09, 1)
+texture_filter = 0
+
+[sub_resource type="QuadMesh" id="Mesh_dest"]
+size = Vector2(1.5, 0.35)
+
+[sub_resource type="StandardMaterial3D" id="Mat_door"]
+albedo_color = Color(0.12, 0.13, 0.16, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="Mesh_door"]
+size = Vector3(0.55, 1.9, 0.08)
+
+[sub_resource type="StandardMaterial3D" id="Mat_headlight"]
+emission_enabled = true
+emission = Color(1, 0.95, 0.8, 1)
+emission_energy_multiplier = 2.0
+texture_filter = 0
+
+[sub_resource type="SphereMesh" id="Mesh_headlight"]
+radius = 0.12
+height = 0.24
+
+[node name="BusRig" type="Node3D" unique_id=958642916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70, 0, -6)
+script = ExtResource("1_busrig")
+
+[node name="Bus" type="Node3D" parent="." unique_id=1293377106]
+
+[node name="Body" type="MeshInstance3D" parent="Bus" unique_id=1455311289]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+material_override = SubResource("Mat_body")
+mesh = SubResource("Mesh_body")
+
+[node name="Windscreen" type="MeshInstance3D" parent="Bus" unique_id=1321606090]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 1.7, 1.26)
+material_override = SubResource("Mat_windscreen")
+mesh = SubResource("Mesh_windscreen")
+
+[node name="DestBoard" type="MeshInstance3D" parent="Bus" unique_id=79838867]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 2.55, 1.27)
+material_override = SubResource("Mat_dest")
+mesh = SubResource("Mesh_dest")
+
+[node name="DoorLeafL" type="MeshInstance3D" parent="Bus" unique_id=577615144]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.2, 0.95, 1.26)
+material_override = SubResource("Mat_door")
+mesh = SubResource("Mesh_door")
+
+[node name="DoorLeafR" type="MeshInstance3D" parent="Bus" unique_id=417996221]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0.95, 1.26)
+material_override = SubResource("Mat_door")
+mesh = SubResource("Mesh_door")
+
+[node name="HeadlightL" type="OmniLight3D" parent="Bus" unique_id=96489628]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.167633, 0.8, 0.8000002)
+light_color = Color(1, 0.95, 0.8, 1)
+light_energy = 2.0
+omni_range = 12.0
+omni_attenuation = 1.5
+
+[node name="HeadlightR" type="OmniLight3D" parent="Bus" unique_id=432278183]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.0936584, 0.8, -0.8000002)
+light_color = Color(1, 0.95, 0.8, 1)
+light_energy = 2.0
+omni_range = 12.0
+omni_attenuation = 1.5
+
+[node name="InteriorLight" type="OmniLight3D" parent="Bus" unique_id=398627613]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+light_color = Color(0.7, 0.65, 0.4, 1)
+light_energy = 0.6
+omni_attenuation = 1.2
+
+[node name="HeadlightMeshL" type="MeshInstance3D" parent="Bus" unique_id=686892684]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.7, 0.7)
+material_override = SubResource("Mat_headlight")
+mesh = SubResource("Mesh_headlight")
+
+[node name="HeadlightMeshR" type="MeshInstance3D" parent="Bus" unique_id=1714097583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.9, 0.7, -0.7)
+material_override = SubResource("Mat_headlight")
+mesh = SubResource("Mesh_headlight")
+
+[node name="EngineSnd" type="AudioStreamPlayer3D" parent="." unique_id=611093142]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
+unit_size = 6.0
+max_distance = 40.0
+bus = &"SFX"
+
+[node name="BrakeSnd" type="AudioStreamPlayer3D" parent="." unique_id=1187746811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0.5, 0)
+unit_size = 5.0
+max_distance = 20.0
+bus = &"SFX"
+
+[node name="DoorSnd" type="AudioStreamPlayer3D" parent="." unique_id=1276960767]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0.95, 1.26)
+unit_size = 3.0
+max_distance = 12.0
+bus = &"SFX"
+
+[node name="InteriorSnd" type="AudioStreamPlayer3D" parent="." unique_id=1693712445]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+unit_size = 3.0
+max_distance = 10.0
+bus = &"SFX"

@@ -1,0 +1,15 @@
+[gd_scene format=3 uid="uid://dgtmvm7p6uxea"]
+
+[ext_resource type="Script" path="res://events/e06_bin_radio.gd" id="1_e6"]
+[ext_resource type="AudioStream" uid="uid://7jimsaohm3de" path="res://audio/voice_fragment_a.wav" id="2_voice"]
+
+[node name="E06BinRadio" type="Node3D"]
+script = ExtResource("1_e6")
+event_id = &"e06_bin_radio"
+
+[node name="Radio" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.5, 0.45, 0.4)
+stream = ExtResource("2_voice")
+unit_size = 4.0
+max_distance = 14.0
+bus = &"SFX"
