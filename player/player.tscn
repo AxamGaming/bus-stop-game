@@ -1,0 +1,37 @@
+[gd_scene format=3 uid="uid://dq67a4dcy1buv"]
+
+[ext_resource type="Script" uid="uid://u2t2cwiveb2y" path="res://player/player.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://cjy5u7v08pmuu" path="res://player/player_camera.gd" id="2_cam"]
+[ext_resource type="Script" uid="uid://c1vrjdqx4nkgd" path="res://player/tether.gd" id="3_tether"]
+[ext_resource type="Script" uid="uid://d2k3wcmsvgokw" path="res://player/player_interaction.gd" id="4_yw30f"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.35
+height = 1.8
+
+[node name="Player" type="CharacterBody3D" unique_id=468924884]
+collision_layer = 2
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1061287881]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="Head" type="Node3D" parent="." unique_id=2021499733 node_paths=PackedStringArray("camera")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.62, 0)
+script = ExtResource("2_cam")
+camera = NodePath("Camera3D")
+
+[node name="Camera3D" type="Camera3D" parent="Head" unique_id=1794852940]
+far = 60.0
+
+[node name="InteractRay" type="RayCast3D" parent="Head/Camera3D" unique_id=284006988]
+target_position = Vector3(0, 0, -1.5)
+collision_mask = 4
+
+[node name="Tether" type="Node" parent="." unique_id=1977145712]
+script = ExtResource("3_tether")
+
+[node name="PlayerInteraction" type="Node" parent="." unique_id=1645951409 node_paths=PackedStringArray("ray")]
+script = ExtResource("4_yw30f")
+ray = NodePath("../Head/Camera3D/InteractRay")

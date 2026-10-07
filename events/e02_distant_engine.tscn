@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://events/e02_distant_engine.gd" id="1_e2"]
+[ext_resource type="AudioStream" path="res://audio/engine_approach.wav" id="2_eng"]
+
+[node name="E02DistantEngine" type="Node3D" node_paths=PackedStringArray("engine_sound")]
+script = ExtResource("1_e2")
+event_id = &"e02_distant_engine"
+duration = 8.0
+engine_sound = NodePath("Engine")
+
+[node name="Engine" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_eng")
+unit_size = 20.0
+bus = &"SFX"

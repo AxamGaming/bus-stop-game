@@ -1,0 +1,104 @@
+[gd_resource type="AudioBusLayout" format=3 uid="uid://cdoygl2wq85np"]
+
+[sub_resource type="AudioEffectLimiter" id="lim_master"]
+soft_clip_ratio = 3.0
+
+[sub_resource type="AudioEffectCompressor" id="comp_amb"]
+threshold = -18.0
+ratio = 3.0
+attack_us = 200.0
+release_ms = 350.0
+sidechain = &"SFX"
+
+[sub_resource type="AudioEffectLowPassFilter" id="lp_rain"]
+cutoff_hz = 18000.0
+resonance = 0.2
+
+[sub_resource type="AudioEffectLowPassFilter" id="lp_wind"]
+cutoff_hz = 6000.0
+resonance = 0.2
+
+[sub_resource type="AudioEffectReverb" id="rev_sfx"]
+room_size = 0.35
+wet = 0.15
+
+[sub_resource type="AudioEffectDistortion" id="dist_voice"]
+mode = 1
+drive = 0.35
+post_gain = -2.0
+
+[sub_resource type="AudioEffectLowPassFilter" id="lp_voice"]
+cutoff_hz = 2600.0
+resonance = 0.3
+
+[sub_resource type="AudioEffectReverb" id="rev_shelter"]
+predelay_msec = 25.0
+room_size = 0.55
+dry = 0.9
+wet = 0.45
+
+[resource]
+bus/0/effect/0/effect = SubResource("lim_master")
+bus/0/effect/0/enabled = true
+bus/1/name = &"Ambience"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/1/effect/0/effect = SubResource("comp_amb")
+bus/1/effect/0/enabled = true
+bus/2/name = &"Weather"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Ambience"
+bus/3/name = &"Rain"
+bus/3/solo = false
+bus/3/mute = false
+bus/3/bypass_fx = false
+bus/3/volume_db = 0.0
+bus/3/send = &"Weather"
+bus/3/effect/0/effect = SubResource("lp_rain")
+bus/3/effect/0/enabled = true
+bus/4/name = &"Wind"
+bus/4/solo = false
+bus/4/mute = false
+bus/4/bypass_fx = false
+bus/4/volume_db = 0.0
+bus/4/send = &"Weather"
+bus/4/effect/0/effect = SubResource("lp_wind")
+bus/4/effect/0/enabled = true
+bus/5/name = &"SFX"
+bus/5/solo = false
+bus/5/mute = false
+bus/5/bypass_fx = false
+bus/5/volume_db = 0.0
+bus/5/send = &"Master"
+bus/5/effect/0/effect = SubResource("rev_sfx")
+bus/5/effect/0/enabled = true
+bus/6/name = &"Voice"
+bus/6/solo = false
+bus/6/mute = false
+bus/6/bypass_fx = false
+bus/6/volume_db = 0.0
+bus/6/send = &"Master"
+bus/6/effect/0/effect = SubResource("dist_voice")
+bus/6/effect/0/enabled = true
+bus/6/effect/1/effect = SubResource("lp_voice")
+bus/6/effect/1/enabled = true
+bus/7/name = &"ShelterVerb"
+bus/7/solo = false
+bus/7/mute = false
+bus/7/bypass_fx = false
+bus/7/volume_db = 0.0
+bus/7/send = &"Master"
+bus/7/effect/0/effect = SubResource("rev_shelter")
+bus/7/effect/0/enabled = true
+bus/8/name = &"UI"
+bus/8/solo = false
+bus/8/mute = false
+bus/8/bypass_fx = false
+bus/8/volume_db = 0.0
+bus/8/send = &"Master"

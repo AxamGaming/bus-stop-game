@@ -1,0 +1,170 @@
+[gd_scene format=3 uid="uid://vls5l2aaq6uv"]
+
+[ext_resource type="Script" uid="uid://yvq20mtfe5rx" path="res://ui/hud.gd" id="1_hud"]
+
+[sub_resource type="SystemFont" id="SystemFont_body"]
+font_names = PackedStringArray("Courier New", "Courier", "Liberation Mono", "DejaVu Sans Mono", "monospace")
+antialiasing = 0
+subpixel_positioning = 0
+
+[sub_resource type="FontVariation" id="FontVariation_body"]
+base_font = SubResource("SystemFont_body")
+spacing_glyph = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+draw_center = false
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.62, 0.5, 0.32, 0.6)
+anti_aliasing = false
+
+[sub_resource type="Theme" id="Theme_horror"]
+default_font = SubResource("FontVariation_body")
+default_font_size = 16
+Label/colors/font_color = Color(1, 1, 1, 1)
+Label/colors/font_outline_color = Color(0.015, 0.012, 0.012, 0.92)
+Label/colors/font_shadow_color = Color(0, 0, 0, 0.65)
+Label/constants/outline_size = 3
+Label/constants/shadow_offset_x = 1
+Label/constants/shadow_offset_y = 2
+Label/font_sizes/font_size = 16
+Label/fonts/font = SubResource("FontVariation_body")
+Panel/styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="HUD" type="CanvasLayer" unique_id=1717189397 node_paths=PackedStringArray("crosshair", "prompt_label", "hold_ring", "hold_ring_fill")]
+layer = 10
+script = ExtResource("1_hud")
+crosshair = NodePath("Crosshair")
+prompt_label = NodePath("Prompt")
+hold_ring = NodePath("HoldRing")
+hold_ring_fill = NodePath("HoldRing/HoldRingFill")
+
+[node name="Crosshair" type="Control" parent="." unique_id=97077453]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("Theme_horror")
+
+[node name="DotHalo" type="ColorRect" parent="Crosshair" unique_id=839933448]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -2.0
+offset_top = -2.0
+offset_right = 3.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 0.35)
+
+[node name="Dot" type="ColorRect" parent="Crosshair" unique_id=2116998612]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -1.0
+offset_top = -1.0
+offset_right = 2.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.9, 0.9, 0.9, 0.7)
+
+[node name="Prompt" type="Label" parent="." unique_id=1616166052]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -92.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_horror")
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="HoldRing" type="Control" parent="." unique_id=1539771798]
+visible = false
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = 18.0
+offset_right = 32.0
+offset_bottom = 26.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = SubResource("Theme_horror")
+
+[node name="Track" type="ColorRect" parent="HoldRing" unique_id=666241090]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.04, 0.03, 0.025, 0.65)
+
+[node name="HoldRingFill" type="ColorRect" parent="HoldRing" unique_id=664922037]
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.85, 0.55, 0.85)
+
+[node name="Frame" type="Panel" parent="HoldRing" unique_id=376146964]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TickLeft" type="ColorRect" parent="HoldRing" unique_id=1519732864]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -4.0
+offset_top = -7.0
+offset_right = -3.0
+offset_bottom = 7.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.62, 0.5, 0.32, 0.7)
+
+[node name="TickRight" type="ColorRect" parent="HoldRing" unique_id=973326145]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = 3.0
+offset_top = -7.0
+offset_right = 4.0
+offset_bottom = 7.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.62, 0.5, 0.32, 0.7)

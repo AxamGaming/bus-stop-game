@@ -1,0 +1,30 @@
+# Godot 4 .gitignore (GDD 19: "Git with a Godot .gitignore. Commit at the end of every session.")
+.godot/
+.import/
+export.cfg
+*.tmp
+# export_presets.cfg IS tracked (solo dev, no secrets in it). Export *credentials*
+# live outside the project, so there is nothing sensitive to leak.
+
+# Keep .uid files: they are how Godot 4.4+ tracks moved resources.
+# If your editor version predates 4.4 there simply won't be any.
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Build output
+build/
+dist/
+release/
+*.pck
+*.zip
+
+# Audio working files (keep the exported .wav/.ogg in res://audio/, not the DAW project)
+*.aup3
+*.aup3-wal
+*.flp
+*.als

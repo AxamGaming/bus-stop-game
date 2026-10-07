@@ -1,0 +1,225 @@
+[gd_scene format=3 uid="uid://bswiw0erj5fvo"]
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_5"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.09, 0.095, 0.085, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_6"]
+size = Vector3(200, 0.2, 200)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_2"]
+albedo_color = Color(0.07, 0.075, 0.085, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_7"]
+size = Vector3(140, 0.03, 7)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_9"]
+size = Vector3(140, 0.18, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3"]
+albedo_color = Color(0.16, 0.16, 0.15, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_8"]
+size = Vector3(140, 0.18, 0.25)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_11"]
+albedo_color = Color(0.35, 0.34, 0.28, 1)
+texture_filter = 0
+
+[sub_resource type="BoxMesh" id="BoxMesh_10"]
+size = Vector3(2, 0.005, 0.18)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.035, 0.05, 0.06, 0.95)
+texture_filter = 0
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_12"]
+material = SubResource("StandardMaterial3D_4")
+
+[node name="Road" type="Node3D" unique_id=1589976269]
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=987274252]
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape3D" parent="Ground" unique_id=365393927]
+transform = Transform3D(2.735, 0, 0, 0, 2.735, 0, 0, 0, 2.735, 0, 0, 0)
+shape = SubResource("WorldBoundaryShape3D_5")
+
+[node name="Mesh" type="MeshInstance3D" parent="Ground" unique_id=2016149551]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.105, 0)
+material_override = SubResource("StandardMaterial3D_1")
+mesh = SubResource("BoxMesh_6")
+
+[node name="RoadSurface" type="MeshInstance3D" parent="." unique_id=1264088889]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.015, -8)
+material_override = SubResource("StandardMaterial3D_2")
+mesh = SubResource("BoxMesh_7")
+
+[node name="Kerb" type="StaticBody3D" parent="." unique_id=215688276]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, -4.5)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape3D" parent="Kerb" unique_id=828307225]
+shape = SubResource("BoxShape3D_9")
+
+[node name="Mesh" type="MeshInstance3D" parent="Kerb" unique_id=1440325246]
+material_override = SubResource("StandardMaterial3D_3")
+mesh = SubResource("BoxMesh_8")
+
+[node name="Kerb2" type="StaticBody3D" parent="." unique_id=1412206614]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.09, -11.540424)
+collision_mask = 0
+
+[node name="Collision" type="CollisionShape3D" parent="Kerb2" unique_id=1652536063]
+shape = SubResource("BoxShape3D_9")
+
+[node name="Mesh" type="MeshInstance3D" parent="Kerb2" unique_id=725339424]
+material_override = SubResource("StandardMaterial3D_3")
+mesh = SubResource("BoxMesh_8")
+
+[node name="CentreLine" type="Node3D" parent="." unique_id=499401434]
+
+[node name="Dash00" type="MeshInstance3D" parent="CentreLine" unique_id=2128056252]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -56, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash01" type="MeshInstance3D" parent="CentreLine" unique_id=635065867]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -48, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash02" type="MeshInstance3D" parent="CentreLine" unique_id=1605910423]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash03" type="MeshInstance3D" parent="CentreLine" unique_id=1394782195]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -32, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash04" type="MeshInstance3D" parent="CentreLine" unique_id=734396488]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash05" type="MeshInstance3D" parent="CentreLine" unique_id=1507444197]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash06" type="MeshInstance3D" parent="CentreLine" unique_id=28555919]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash07" type="MeshInstance3D" parent="CentreLine" unique_id=1417436517]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash08" type="MeshInstance3D" parent="CentreLine" unique_id=753915125]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash09" type="MeshInstance3D" parent="CentreLine" unique_id=1434311507]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash10" type="MeshInstance3D" parent="CentreLine" unique_id=1204764312]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 24, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash11" type="MeshInstance3D" parent="CentreLine" unique_id=955359598]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash12" type="MeshInstance3D" parent="CentreLine" unique_id=118749147]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Dash13" type="MeshInstance3D" parent="CentreLine" unique_id=1521641643]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48, 0.003, -8)
+material_override = SubResource("StandardMaterial3D_11")
+mesh = SubResource("BoxMesh_10")
+
+[node name="Treeline" type="Node3D" parent="." unique_id=384628142]
+
+[node name="Tree01" type="MeshInstance3D" parent="Treeline" unique_id=640859989]
+transform = Transform3D(4.856731, 0, 0, 0, 8.268354, 0, 0, 0, 1, -22.704454, 4.134177, 30.499615)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree02" type="MeshInstance3D" parent="Treeline" unique_id=1894309080]
+transform = Transform3D(3.830766, 0, 0, 0, 6.204544, 0, 0, 0, 1, -37.37926, 3.102272, -2.928665)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree03" type="MeshInstance3D" parent="Treeline" unique_id=1221622301]
+transform = Transform3D(6.12039, 0, 0, 0, 7.319033, 0, 0, 0, 1, 33.06562, 3.659517, 4.952045)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree04" type="MeshInstance3D" parent="Treeline" unique_id=309098889]
+transform = Transform3D(8.570142, 0, 0, 0, 10.587019, 0, 0, 0, 1, -39.38756, 5.293509, 4.585861)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree05" type="MeshInstance3D" parent="Treeline" unique_id=559194581]
+transform = Transform3D(5.114947, 0, 0, 0, 8.616348, 0, 0, 0, 1, -32.09401, 4.308174, -14.507562)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree06" type="MeshInstance3D" parent="Treeline" unique_id=1499743535]
+transform = Transform3D(5.706675, 0, 0, 0, 7.870836, 0, 0, 0, 1, 31.329176, 3.935418, -8.514943)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree07" type="MeshInstance3D" parent="Treeline" unique_id=610065896]
+transform = Transform3D(5.350564, 0, 0, 0, 9.809492, 0, 0, 0, 1, -32.062172, 4.904746, -23.596163)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree08" type="MeshInstance3D" parent="Treeline" unique_id=1752834423]
+transform = Transform3D(3.604366, 0, 0, 0, 6.176395, 0, 0, 0, 1, 24.158176, 3.088197, -37.73938)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree09" type="MeshInstance3D" parent="Treeline" unique_id=366521664]
+transform = Transform3D(4.795218, 0, 0, 0, 8.700642, 0, 0, 0, 1, -24.330345, 4.350321, 28.364744)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree10" type="MeshInstance3D" parent="Treeline" unique_id=654237534]
+transform = Transform3D(8.383096, 0, 0, 0, 10.635069, 0, 0, 0, 1, -26.327587, 5.317535, -35.672123)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree11" type="MeshInstance3D" parent="Treeline" unique_id=430771075]
+transform = Transform3D(6.825478, 0, 0, 0, 9.865373, 0, 0, 0, 1, 8.326692, 4.932687, 41.59322)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree12" type="MeshInstance3D" parent="Treeline" unique_id=953316436]
+transform = Transform3D(5.382102, 0, 0, 0, 9.86468, 0, 0, 0, 1, -16.3768, 4.93234, -32.06882)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree13" type="MeshInstance3D" parent="Treeline" unique_id=1217961921]
+transform = Transform3D(4.037535, 0, 0, 0, 8.663422, 0, 0, 0, 1, -33.53369, 4.331711, -12.136229)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree14" type="MeshInstance3D" parent="Treeline" unique_id=1344055166]
+transform = Transform3D(5.418121, 0, 0, 0, 7.301219, 0, 0, 0, 1, -16.349867, 3.650609, 39.678772)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree15" type="MeshInstance3D" parent="Treeline" unique_id=2139746425]
+transform = Transform3D(4.868528, 0, 0, 0, 9.137036, 0, 0, 0, 1, 12.418462, 4.568518, -38.537346)
+mesh = SubResource("QuadMesh_12")
+
+[node name="Tree16" type="MeshInstance3D" parent="Treeline" unique_id=320014181]
+transform = Transform3D(7.356132, 0, 0, 0, 10.926832, 0, 0, 0, 1, -45.28158, 5.463416, 4.165921)
+mesh = SubResource("QuadMesh_12")

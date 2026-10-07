@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://events/e01_lamp_flicker.gd" id="1_e1"]
+
+[node name="E01LampFlicker" type="Node3D"]
+script = ExtResource("1_e1")
+event_id = &"e01_lamp_flicker"

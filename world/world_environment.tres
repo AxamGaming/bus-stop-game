@@ -1,0 +1,25 @@
+; world/world_environment.tres -- GDD 15 "Fog", GDD 19.
+; Depth fog 4 m -> 32 m, curve 1.2, fog colour == background colour, very dark blue ambient.
+; fog_depth_end is EXACTLY LookAtTracker.max_distance (32.0): the player is never "watching"
+; something they cannot see (fairness rule 6).
+; NO volumetric fog: Forward+ only, costs more, and it bands.
+
+[gd_resource type="Environment" load_steps=1 format=3]
+
+[resource]
+background_mode = 1
+background_color = Color(0.063, 0.094, 0.125, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.043, 0.071, 0.094, 1)
+ambient_light_energy = 1.0
+tonemap_mode = 0
+glow_enabled = false
+fog_enabled = true
+fog_mode = 1
+fog_light_color = Color(0.063, 0.094, 0.125, 1)
+fog_density = 1.0
+fog_aerial_perspective = 0.0
+fog_sky_affect = 1.0
+fog_depth_begin = 4.0
+fog_depth_end = 32.0
+fog_depth_curve = 1.2

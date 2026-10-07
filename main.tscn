@@ -1,0 +1,179 @@
+[gd_scene format=3 uid="uid://ddq3ld43a4qrw"]
+
+[ext_resource type="Script" uid="uid://3g1m7187r62s" path="res://main.gd" id="1_dg77c"]
+[ext_resource type="AudioStream" uid="uid://cp2lrx3ktblv7" path="res://audio/lamp_hum.wav" id="5_ycdy4"]
+[ext_resource type="AudioStream" uid="uid://dfyodkt4dm3ws" path="res://audio/heartbeat.wav" id="6_w48qg"]
+[ext_resource type="Script" uid="uid://cebh0lscgea1o" path="res://world/look_at_tracker.gd" id="9_ycdy4"]
+[ext_resource type="Script" uid="uid://dofwbybm8ut3g" path="res://world/gaze_monitor.gd" id="10_w48qg"]
+[ext_resource type="Script" uid="uid://dtk4s03m0w0go" path="res://world/night_clock.gd" id="11_vivmo"]
+[ext_resource type="Script" uid="uid://cctoqt4amhe6a" path="res://core/director.gd" id="16_2cqfq"]
+[ext_resource type="PackedScene" uid="uid://vls5l2aaq6uv" path="res://ui/hud.tscn" id="17_yaehf"]
+[ext_resource type="Environment" path="res://world/world_environment.tres" id="ext1"]
+[ext_resource type="PackedScene" uid="uid://bswiw0erj5fvo" path="res://world/road.tscn" id="ext2"]
+[ext_resource type="PackedScene" uid="uid://cu2wdym6eay1p" path="res://world/bus_stop.tscn" id="ext3"]
+[ext_resource type="PackedScene" path="res://world/figure_stations.tscn" id="ext4"]
+[ext_resource type="PackedScene" uid="uid://bb0vc1j72lcbt" path="res://world/fog_figure.tscn" id="ext5"]
+[ext_resource type="PackedScene" path="res://world/rain.tscn" id="ext6"]
+[ext_resource type="PackedScene" uid="uid://dq67a4dcy1buv" path="res://player/player.tscn" id="ext7"]
+[ext_resource type="Script" uid="uid://bwb5gqk3w8nv3" path="res://core/debug_kit.gd" id="ext8"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_2"]
+emission_shape = 3
+emission_box_extents = Vector3(15, 1, 15)
+direction = Vector3(0.25, -1, 0.1)
+spread = 4.0
+initial_velocity_min = 7.0
+initial_velocity_max = 10.0
+gravity = Vector3(0.5, -16, 0.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3"]
+transparency = 1
+cull_mode = 2
+shading_mode = 0
+albedo_color = Color(0.62, 0.7, 0.82, 0.32)
+texture_filter = 0
+billboard_mode = 1
+billboard_keep_scale = true
+
+[sub_resource type="QuadMesh" id="QuadMesh_4"]
+material = SubResource("StandardMaterial3D_3")
+size = Vector2(0.02, 0.55)
+
+[node name="Main" type="Node3D" unique_id=1257233798 node_paths=PackedStringArray("director", "figure", "gaze", "lamp", "clock", "tracker", "player", "interaction", "sign_line")]
+script = ExtResource("1_dg77c")
+director = NodePath("Director")
+figure = NodePath("FogFigure")
+gaze = NodePath("GazeMonitor")
+lamp = NodePath("BusStop/Lamp")
+clock = NodePath("NightClock")
+tracker = NodePath("LookAtTracker")
+player = NodePath("Player")
+interaction = NodePath("Player/PlayerInteraction")
+sign_line = NodePath("BusStop/SignLine")
+figure_appears_at = 10.0
+bus_arrives_at = 60.0
+post_arrival_seconds = 10.0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=979499606]
+environment = ExtResource("ext1")
+
+[node name="Road" parent="." unique_id=1156159705 instance=ExtResource("ext2")]
+
+[node name="BusStop" parent="." unique_id=439214536 instance=ExtResource("ext3")]
+
+[node name="Lamp" parent="BusStop" index="2" unique_id=1346043471 node_paths=PackedStringArray("hum")]
+hum = NodePath("Hum")
+
+[node name="Hum" parent="BusStop/Lamp" index="3" unique_id=1503050174]
+stream = ExtResource("5_ycdy4")
+autoplay = true
+
+[node name="Heartbeat" parent="BusStop/Lamp" index="4" unique_id=414030884]
+stream = ExtResource("6_w48qg")
+attenuation_model = 3
+unit_size = 30.0
+max_db = 1.0
+panning_strength = 1.5
+
+[node name="FigureStations" parent="." unique_id=1562264150 instance=ExtResource("ext4")]
+
+[node name="Station0" parent="FigureStations/Stations" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0, -2)
+
+[node name="Station1" parent="FigureStations/Stations" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0, -2)
+
+[node name="Station2" parent="FigureStations/Stations" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0, -2)
+
+[node name="Station3" parent="FigureStations/Stations" index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0, -2)
+
+[node name="Station4" parent="FigureStations/Stations" index="4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, -2)
+
+[node name="Sphere0" parent="FigureStations/Markers" index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.2, -2)
+
+[node name="Tag0" parent="FigureStations/Markers" index="1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0.95, -2)
+
+[node name="Sphere1" parent="FigureStations/Markers" index="2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.2, -2)
+
+[node name="Tag1" parent="FigureStations/Markers" index="3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19, 0.95, -2)
+
+[node name="Sphere2" parent="FigureStations/Markers" index="4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0.2, -2)
+
+[node name="Tag2" parent="FigureStations/Markers" index="5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13, 0.95, -2)
+
+[node name="Sphere3" parent="FigureStations/Markers" index="6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.2, -2)
+
+[node name="Tag3" parent="FigureStations/Markers" index="7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9, 0.95, -2)
+
+[node name="Sphere4" parent="FigureStations/Markers" index="8"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.2, -2)
+
+[node name="Tag4" parent="FigureStations/Markers" index="9"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0.95, -2)
+
+[node name="FogFigure" parent="." unique_id=343377074 node_paths=PackedStringArray("stations", "tracker", "lamp", "step_sound") instance=ExtResource("ext5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26, 0, -2)
+stations = [NodePath("../FigureStations/Stations/Station0"), NodePath("../FigureStations/Stations/Station1"), NodePath("../FigureStations/Stations/Station2"), NodePath("../FigureStations/Stations/Station3"), NodePath("../FigureStations/Stations/Station4")]
+tracker = NodePath("../LookAtTracker")
+lamp = NodePath("../BusStop/Lamp")
+step_sound = NodePath("AudioStreamPlayer3D")
+
+[node name="AudioStreamPlayer3D" parent="FogFigure" index="1" unique_id=1915155065]
+unit_size = 8.0
+max_distance = 35.0
+
+[node name="Rain" parent="." unique_id=417539333 instance=ExtResource("ext6")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.7217255, -0.7539139)
+lifetime = 1.4
+preprocess = 1.5
+visibility_aabb = AABB(-16, -8, -16, 32, 16, 32)
+process_material = SubResource("ParticleProcessMaterial_2")
+draw_pass_1 = SubResource("QuadMesh_4")
+
+[node name="Player" parent="." unique_id=560429422 instance=ExtResource("ext7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 0, 0.2)
+
+[node name="LookAtTracker" type="Node" parent="." unique_id=109220137 node_paths=PackedStringArray("camera")]
+script = ExtResource("9_ycdy4")
+camera = NodePath("../Player/Head/Camera3D")
+
+[node name="GazeMonitor" type="Node" parent="." unique_id=1940834776 node_paths=PackedStringArray("tracker", "figure", "lamp")]
+script = ExtResource("10_w48qg")
+tracker = NodePath("../LookAtTracker")
+figure = NodePath("../FogFigure")
+lamp = NodePath("../BusStop/Lamp")
+
+[node name="NightClock" type="Node" parent="." unique_id=1675406172]
+script = ExtResource("11_vivmo")
+
+[node name="DebugKit" type="Node" parent="." unique_id=505318901]
+script = ExtResource("ext8")
+
+[node name="Director" type="Node" parent="." unique_id=183018290]
+script = ExtResource("16_2cqfq")
+
+[node name="HUD" parent="." unique_id=1412184339 node_paths=PackedStringArray("interaction") instance=ExtResource("17_yaehf")]
+interaction = NodePath("../Player/PlayerInteraction")
+
+[node name="Prompt" parent="HUD" index="1" unique_id=1616166052]
+offset_bottom = -120.0
+
+[node name="HoldRingFill" parent="HUD/HoldRing" parent_id_path=PackedInt32Array(1412184339, 1539771798) index="1" unique_id=664922037]
+grow_horizontal = 1
+
+[editable path="BusStop"]
+[editable path="FigureStations"]
+[editable path="FogFigure"]
+[editable path="Player"]
+[editable path="HUD"]

@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://b755neyicvus7"]
+
+[ext_resource type="Script" uid="uid://bb6jnox7dl6sl" path="res://events/beat_figure_appear.gd" id="1_app"]
+
+[node name="BeatFigureAppear" type="Node3D" unique_id=273568895]
+script = ExtResource("1_app")
+event_id = &"beat_figure_appear"
