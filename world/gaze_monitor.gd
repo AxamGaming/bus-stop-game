@@ -31,6 +31,8 @@ func reset() -> void:
 	_stare = 0.0           # a fresh run means the demonstration must be earned again
 
 func _physics_process(delta: float) -> void:
+	if Game.state != Game.State.NIGHT:
+		return
 	if Time.get_ticks_msec() / 1000.0 < _immunity_until:
 		return
 	if _ended:

@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://du7sqr34s21wf" path="res://player/interactable.gd" id="2_tvair"]
 [ext_resource type="Script" uid="uid://b0tseg83k3guu" path="res://world/sign_line.gd" id="3_ai731"]
 [ext_resource type="Script" uid="uid://bgmrtcxmfmieb" path="res://world/lamp_controller.gd" id="ext1"]
+[ext_resource type="Script" uid="uid://bp0st3r1n8ght" path="res://world/poster.gd" id="4_poster"]
+[ext_resource type="Script" uid="uid://bt1m3tbl3n8gh" path="res://world/timetable.gd" id="5_timetable"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_10"]
 size = Vector3(3.3, 0.12, 3.3)
@@ -282,7 +284,7 @@ mesh = SubResource("BoxMesh_29")
 
 [node name="TimetableBody" type="StaticBody3D" parent="." unique_id=963040999 groups=["readable"]]
 transform = Transform3D(-0.53, 0, -8.002777e-08, 0, 0.53, 0, 8.002777e-08, 0, -0.53, 2.3642461, 1.7277248, 1.4371002)
-script = ExtResource("2_tvair")
+script = ExtResource("5_timetable")
 prompt = "Read timetable"
 max_reach = 1.0
 shape_size = Vector3(0.6, 0.6, 0.15)
@@ -294,20 +296,16 @@ LAST BUS  11:47 PM
 
 Please wait inside the light.
 
-  1. Do not board a bus
-     that has no number.
-  2. If someone is waiting
-     with you, do not
-     speak first.
-  3. Never walk past
-     the sign.
+  1. [illegible — water damage]
+  2. [illegible — water damage]
+  3. [illegible — water damage]
 
 Thank you for waiting."
 outline_size = 0
 
 [node name="PosterBody" type="StaticBody3D" parent="." unique_id=1649117286 groups=["readable"]]
 transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0.09, 1.6, 0.4)
-script = ExtResource("2_tvair")
+script = ExtResource("4_poster")
 prompt = "Read poster"
 max_reach = 1.0
 shape_size = Vector3(0.35, 0.45, 1)
@@ -317,8 +315,9 @@ pixel_size = 0.0035
 modulate = Color(0.55, 0.53, 0.46, 1)
 text = "MISSING
 
-last seen waiting
-at this stop"
+(la-t s-en
+
+— text washed out —)"
 font_size = 36
 outline_size = 0
 

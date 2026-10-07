@@ -56,6 +56,14 @@ func run_night(def: NightDef) -> void:
 	if sign_line:
 		sign_line.configure(def.sign_lethal)
 
+	# A3: tell every world object with per-night appearance which night it
+	# is. This runs AFTER the gameplay systems are configured and BEFORE
+	# the clock starts -- the night's initial state (poster text, timetable
+	# text, etc.) is correct before the first tick. The swap happens behind
+	# the fade's black rectangle (the caller fades to black before calling
+	# run_night), so the player never sees the text change.
+	_apply_night_content(def.index)
+
 	# Build the event context fresh each night so nothing leaks across restarts.
 	_ctx = EventContext.new()
 	_ctx.lamp = lamp
@@ -165,21 +173,57 @@ func _build_night(idx: int) -> NightDef:
 			n.figure_cap_index = 1
 			n.gaze_lethal = false
 			n.sign_lethal = false
+			n.beats = _build_night_1_beats()
 		2:
 			n.figure_cap_index = 2
 			n.gaze_lethal = false
 			n.sign_lethal = true
+			n.beats = _build_night_2_beats()
 		3:
 			n.figure_cap_index = 3
 			n.gaze_lethal = true
 			n.sign_lethal = true
+			n.beats = _build_night_3_beats()
 		_:
 			push_error("[main] no NightDef for index %d" % idx)
 			n.figure_cap_index = 1
 			n.gaze_lethal = false
 			n.sign_lethal = false
-	n.beats = _build_night_1_beats()
+			n.beats = _build_night_1_beats()
 	return n
+
+# ---- A3: per-night content ----
+
+# Tell every world object with per-night appearance which night it is. Each
+# object implements set_night(idx) -- synchronous, idempotent, no Game refs.
+# We use get_node_or_null() + has_method() (duck typing) so main.gd compiles
+# and runs even before every object exists. Add a new object's set_night call
+# the moment the object exists -- nothing breaks in between.
+#
+# Why explicit wiring instead of call_group("night_content", ...):
+#   - call_group has a documented failure mode (Godot #43362): mutating the
+#     tree/group during the call can skip nodes. set_night itself doesn't
+#     mutate the tree, but a future set_night that spawns/hides children
+#     would hit this.
+#   - Explicit wiring gives ordering control and one file to read.
+#   - The list is small (poster, timetable, eventually bus + stranger). A
+#     group broadcast saves nothing at this scale.
+func _apply_night_content(idx: int) -> void:
+	var poster := get_node_or_null("BusStop/PosterBody")
+	if poster != null and poster.has_method("set_night"):
+		poster.set_night(idx)
+
+	var timetable := get_node_or_null("BusStop/TimetableBody")
+	if timetable != null and timetable.has_method("set_night"):
+		timetable.set_night(idx)
+
+	# Uncomment when these objects exist (B6 bus rig, B4 stranger):
+	# var bus := get_node_or_null("Bus")
+	# if bus != null and bus.has_method("set_night"):
+	#         bus.set_night(idx)
+	# var stranger := get_node_or_null("BenchStranger")
+	# if stranger != null and stranger.has_method("set_night"):
+	#         stranger.set_night(idx)
 
 # ---- beat sheet construction ----
 
@@ -206,6 +250,39 @@ func _build_night_1_beats() -> Array[BeatDef]:
 		_load_event("res://events/e02_distant_engine.tscn",
 			&"e02_distant_engine", 1, 1, 3)))
 
+	return out
+
+func _build_night_2_beats() -> Array[BeatDef]:
+	# Placeholder. Real Night 2 beats come with the bus rig (B6) and the
+	# stranger (B4). For now: same shape as Night 1, but the stare-lesson
+	# flicker is moved to 3:00 so you can tell the nights apart in the log
+	# and confirm the per-night beat routing actually works.
+	var out: Array[BeatDef] = []
+	out.append(_authored(figure_appears_at, 2,
+		_load_event("res://events/beat_figure_appear.tscn",
+			&"beat_figure_appear", 2, 1, 3)))
+	out.append(_authored(90.0, 1,
+		_load_event("res://events/e02_distant_engine.tscn",
+			&"e02_distant_engine", 1, 1, 3)))
+	out.append(_authored(180.0, 2,   # 3:00, not 2:30 -- tells Night 2 from Night 1
+		_load_event("res://events/e01_lamp_flicker.tscn",
+			&"e01_lamp_flicker", 2, 1, 3)))
+	return out
+
+func _build_night_3_beats() -> Array[BeatDef]:
+	# Placeholder. Real Night 3 beats come with the silence beat (S3) and
+	# the real bus (S3). For now: a long quiet night with one early engine
+	# and a late flicker, to feel different from Nights 1 and 2.
+	var out: Array[BeatDef] = []
+	out.append(_authored(figure_appears_at, 2,
+		_load_event("res://events/beat_figure_appear.tscn",
+			&"beat_figure_appear", 2, 1, 3)))
+	out.append(_authored(60.0, 1,    # 1:00, earlier -- the night is worse
+		_load_event("res://events/e02_distant_engine.tscn",
+			&"e02_distant_engine", 1, 1, 3)))
+	out.append(_authored(210.0, 2,   # 3:30
+		_load_event("res://events/e01_lamp_flicker.tscn",
+			&"e01_lamp_flicker", 2, 1, 3)))
 	return out
 
 func _authored(time_sec: float, intensity: int, event: HorrorEvent) -> BeatDef:

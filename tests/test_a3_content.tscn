@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cmpf2m2wvsid1"]
+
+[ext_resource type="Script" path="res://tests/test_a3_content.gd" id="1_test"]
+
+[node name="TestA3Content" type="Node"]
+script = ExtResource("1_test")
